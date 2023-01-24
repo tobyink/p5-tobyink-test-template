@@ -45,7 +45,7 @@ TOBYINK::Test::Template - Skeleton distribution for testing purposes
 
 =head1 DESCRIPTION
 
-Demonsrtation of testing setup.
+Demonstration of testing setup.
 
 =head1 BUGS
 
