@@ -135,7 +135,7 @@ describe "method `foo_bar`" => sub {
 				call bar => $bar;
 			},
 			"method call didn't alter the values of the attributes",
-		);
+		) or diag Dumper( $object );
 	};
 };
 

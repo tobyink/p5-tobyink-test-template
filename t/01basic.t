@@ -19,13 +19,11 @@ the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-use strict;
-use warnings;
 use Test2::V0;
+use Test2::Plugin::BailOnFail;
 
 use TOBYINK::Test::Template ();
 
 pass 'compiles ok';
 
 done_testing;
-
