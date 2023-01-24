@@ -4,7 +4,7 @@
 
 =head1 PURPOSE
 
-Print version numbers, etc.
+Simple demonstration of the module.
 
 =head1 AUTHOR
 
@@ -20,21 +20,12 @@ the same terms as the Perl 5 programming language system itself.
 =cut
 
 use Test2::V0;
+use TOBYINK::Test::Template;
 
-my @modules = qw(
-	Moo
-	Class::XSAccessor
-	Test2::V0
-);
+my $o = TOBYINK::Test::Template->new( foo => 'Hello' );
+is( $o->foo_bar, 'Hello' );
 
-diag "\n####";
-for my $mod ( sort @modules ) {
-	eval "require $mod;";
-	diag sprintf( '%-20s %s', $mod, $mod->VERSION // 'undef' );
-}
-diag "####";
-
-pass;
+$o->bar( 'world' );
+is( $o->foo_bar, 'Hello world' );
 
 done_testing;
-

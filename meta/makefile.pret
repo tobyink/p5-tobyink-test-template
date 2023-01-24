@@ -4,6 +4,7 @@
 
 `TOBYINK-Test-Template`
 	:runtime-requirement    [ :on "perl 5.010001"^^:CpanId ];
+	:runtime-requirement    [ :on "Moo 2.000000"^^:CpanId ];
 	:test-requirement       [ :on "Test2::V0"^^:CpanId ];
 	:test-requirement       [ :on "Test2::Tools::Spec"^^:CpanId ];
 	:test-requirement       [ :on "Test2::Require::AuthorTesting"^^:CpanId ];
