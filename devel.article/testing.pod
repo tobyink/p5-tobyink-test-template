@@ -39,7 +39,7 @@ L<Test2::Tools::Spec> to better structure our unit tests.
 
 =item *
 
-L<Test2::Plugins::BailOnFail> for when your tests simply cannot carry on.
+L<Test2::Plugin::BailOnFail> for when your tests simply cannot carry on.
 Use sparingly.
 
 =back
@@ -81,7 +81,7 @@ of dependencies, the values of important environment variables, etc.
 F<< t/01basic.t >> which loads all of your modules, or at least the important
 ones, then passes without any real testing being done. The purpose of this
 is to quickly check for syntax errors so extreme that they prevent your code
-from even compiling. This is a good place for L<Test2::Plugins::BailOnFail>.
+from even compiling. This is a good place for L<Test2::Plugin::BailOnFail>.
 
 =back
 

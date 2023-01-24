@@ -16,7 +16,7 @@
 			<li><a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AAuthorTesting">Test2::Require::AuthorTesting</a> to skip certain tests when run on the end user's machine, and require the <code>AUTHOR_TESTING</code> environment variable to run. This is useful for tests which are very slow or require a highly specific environment to run in.</li>
 			<li><a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AModule">Test2::Require::Module</a> to skip certain tests when optional modules are unavailable.</li>
 			<li><a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3ATools%3A%3ASpec">Test2::Tools::Spec</a> to better structure our unit tests.</li>
-			<li><a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3APlugins%3A%3ABailOnFail">Test2::Plugins::BailOnFail</a> for when your tests simply cannot carry on. Use sparingly.</li>
+			<li><a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3APlugin%3A%3ABailOnFail">Test2::Plugin::BailOnFail</a> for when your tests simply cannot carry on. Use sparingly.</li>
 		</ul>
 		<p>There are other Test2 modules that can be nice to have, but that's a good starter set. The ones I list above are distributed alongside <a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3AV0">Test2::V0</a>, so you get them "for free". It is worth explicitly listing them in your project's dependencies though, in case they are split into separate distributions in the future.</p>
 		<h2><span id="Test_directory_structure">Test directory structure</span></h2>
@@ -27,7 +27,7 @@
 		<p>I will typically include two such tests:</p>
 		<ul>
 			<li><em>t/00start.t</em> which performs no real testing, but prints relevant information about the system it's being run on, such as the version numbers of dependencies, the values of important environment variables, etc.</li>
-			<li><em>t/01basic.t</em> which loads all of your modules, or at least the important ones, then passes without any real testing being done. The purpose of this is to quickly check for syntax errors so extreme that they prevent your code from even compiling. This is a good place for <a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3APlugins%3A%3ABailOnFail">Test2::Plugins::BailOnFail</a>.</li>
+			<li><em>t/01basic.t</em> which loads all of your modules, or at least the important ones, then passes without any real testing being done. The purpose of this is to quickly check for syntax errors so extreme that they prevent your code from even compiling. This is a good place for <a class="podlinkpod" href="https://metacpan.org/pod/Test2%3A%3APlugin%3A%3ABailOnFail">Test2::Plugin::BailOnFail</a>.</li>
 		</ul>
 		<h2><span id="Unit_tests">Unit tests</span></h2>
 		<p>For each module <em>lib/Foo/Bar.pm</em> there should be a corresponding unit test script <em>t/unit/Foo/Bar.t</em>.</p>
