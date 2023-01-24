@@ -1,0 +1,237 @@
+=head1 Perl Testing in 2023
+
+With my open source work, I've historically taken an approach which relies
+more on integration testing than unit testing, but with some of my newer
+projects, I've tried adopting principles from $paidwork and applying them
+to my free software.
+
+This is a quick run-down of how I'm structuring my test suite in newer
+projects. It's likely that many of my existing projects will never adopt
+this structure, but some may.
+
+=head2 Out with the old, in with the new
+
+First step is ditching L<Test::More>, L<Test::Fatal>, L<Test::Warnings>,
+and other pre-Test2 testing libraries.
+
+L<Test2::V0> provides a good base to work with, so we add that to our
+project's requirements list straight away.
+
+We'll round that out with:
+
+=over
+
+=item *
+
+L<Test2::Require::AuthorTesting> to skip certain tests when run on the
+end user's machine, and require the C<AUTHOR_TESTING> environment variable
+to run. This is useful for tests which are very slow or require a highly
+specific environment to run in.
+
+=item *
+
+L<Test2::Require::Module> to skip certain tests when optional modules are
+unavailable.
+
+=item *
+
+L<Test2::Tools::Spec> to better structure our unit tests.
+
+=item *
+
+L<Test2::Plugins::BailOnFail> for when your tests simply cannot carry on.
+Use sparingly.
+
+=back
+
+There are other Test2 modules that can be nice to have, but that's a good
+starter set. The ones I list above are distributed alongside L<Test2::V0>,
+so you get them "for free". It is worth explicitly listing them in your
+project's dependencies though, in case they are split into separate
+distributions in the future.
+
+=head2 Test directory structure
+
+Perl distributions typically keep their tests in a directory called F<< t >>
+found inside the project root. We won't change that. We will however create
+two subdirectories within it, F<< t/unit >> and F<< t/integration >>.
+
+You may have other categories of tests which need their own subdirectories
+too, but these two will be sufficient for most projects.
+
+If support modules are needed for testing, they can live in F<< t/lib >>.
+If any data files are needed, put them in F<< t/share >>.
+
+Any especially important tests can included in the F<< t >> directory itself
+for maximum visibility. I recommend giving them numerically-prefixed filenames
+for better control over the order they run in.
+
+I will typically include two such tests:
+
+=over
+
+=item *
+
+F<< t/00start.t >> which performs no real testing, but prints relevant
+information about the system it's being run on, such as the version numbers
+of dependencies, the values of important environment variables, etc.
+
+=item *
+
+F<< t/01basic.t >> which loads all of your modules, or at least the important
+ones, then passes without any real testing being done. The purpose of this
+is to quickly check for syntax errors so extreme that they prevent your code
+from even compiling. This is a good place for L<Test2::Plugins::BailOnFail>.
+
+=back
+
+=head2 Unit tests
+
+For each module F<< lib/Foo/Bar.pm >> there should be a corresponding unit
+test script F<< t/unit/Foo/Bar.t >>.
+
+The prelude of this file will look something like this:
+
+  use Test2::V0 -target => 'Foo::Bar';
+  use Test2::Tools::Spec;
+  use Data::Dumper;
+
+The footer will look exactly like this:
+
+  done_testing;
+
+And in between will be tests for each unit of code. A "unit" would typically
+be a function, a method, or an important package variable. Tests for a unit
+should avoid exercising much code outside their unit, and should I<especially>
+avoid exercising code outside the target module.
+
+A fairly extensive unit test for a method:
+
+  describe "method `foo_bar`" => sub {
+    
+    my ( $foo, $bar, $expected_foo_bar );
+    
+    case 'both defined' => sub {
+      $foo = 'Hello';
+      $bar = 'world';
+      $expected_foo_bar = 'Hello world';
+    };
+    
+    case 'both defined, but foo is empty string' => sub {
+      $foo = '';
+      $bar = 'world';
+      $expected_foo_bar = ' world';
+    };
+    
+    case 'both defined, but bar is empty string' => sub {
+      $foo = 'Hello';
+      $bar = '';
+      $expected_foo_bar = 'Hello ';
+    };
+    
+    case 'both defined, but both are empty string' => sub {
+      $foo = '';
+      $bar = '';
+      $expected_foo_bar = ' ';
+    };
+    
+    case 'foo is undefined' => sub {
+      $foo = undef;
+      $bar = 'world';
+      $expected_foo_bar = 'world';
+    };
+    
+    case 'bar is undefined' => sub {
+      $foo = 'Hello';
+      $bar = undef;
+      $expected_foo_bar = 'Hello';
+    };
+    
+    case 'both are undefined' => sub {
+      $foo = undef;
+      $bar = undef;
+      $expected_foo_bar = '';
+    };
+    
+    tests 'it works' => sub {
+      my ( $object, $got_foo_bar, $got_exception, $got_warnings );
+      
+      $got_exception = dies {
+        $got_warnings = warns {
+          $object = $CLASS->new( foo => $foo, bar => $bar );
+          $got_foo_bar = $object->foo_bar;
+        };
+      };
+      is( $got_exception, undef, 'no exception thrown' );
+      is( $got_warnings, 0, 'no warnings generated' );
+      is( $got_foo_bar, $expected_foo_bar, 'expected string returned' );
+      is(
+        $object,
+        object {
+          call foo => $foo;
+          call bar => $bar;
+        },
+        "method call didn't alter the values of the attributes",
+      ) or diag Dumper( $object );
+    };
+  };
+
+The module itself as a whole can also be considered a "unit" so that very
+basic module-wide concerns can be tested there.
+
+A fairly simple module-wide unit test:
+
+  describe "class `$CLASS`" => sub {
+    
+    tests 'it inherits from Moo::Object' => sub {
+      isa_ok( $CLASS, 'Moo::Object' );
+    };
+    
+    tests 'it can be instantiated' => sub {
+      can_ok( $CLASS, 'new' );
+    };
+  };
+
+=head2 Integration tests
+
+Integration tests can take a far more freeform approach. These tests should
+ensure that the system as a whole, or subsystems within it (which may involve
+multiple modules), work when used together.
+
+A good place to start is to look at the I<SYNOPSIS> sections of your
+documentation and test that they work as advertised.
+
+Integration tests should use L<Test2::V0> but will often be small enough not
+to benefit much from L<Test2::Tools::Spec>.
+
+=head2 Running tests locally
+
+The Test2 tool for running your test suite is L<yath|App::Yath>, but old
+stalwart L<prove|App::Prove> also works well. In your project roor directory,
+you should be able to run C<< yath test >> at the command-line to run your
+entire test suite. C<< prove -lr >> should also work.
+
+If you need more verbose output to see exactly which tests are passing, then
+append C<< -v >> to each command.
+
+=head2 Continuous integration with GitHub Actions
+
+I will normally use GitHub Actions to automatically run my test suite on
+each push, on every major version of Perl I support. One of the test runs
+will load L<Devel::Cover> and use it to upload test coverage data to
+L<Codecov|https://codecov.io> and L<Coveralls|https://coveralls.io>.
+
+This gives me (almost) instant feedback on whether recent commits have
+broken things or reduced test coverage.
+
+100% coverage on Coveralls is totally achieveable. 100% coverage on Codecov
+often takes a lot more work as it measures branch coverage instead of
+statement coverage. It's certainly a good goal though.
+
+Exactly how to set up continuous integration will depend a lot on your
+built tools, so I won't go into specifics here.
+
+=head2 Summary
+
+I feel this setup provides a pretty good basis for test-driven Perl development
+in 2023.
