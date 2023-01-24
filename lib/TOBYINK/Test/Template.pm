@@ -54,7 +54,7 @@ L<https://github.com/tobyink/p5-tobyink-test-template/issues>.
 
 =head1 SEE ALSO
 
-L<https://toby.ink/blog/>.
+L<https://toby.ink/blog/2023/01/24/perl-testing-in-2023/>.
 
 =head1 AUTHOR
 
